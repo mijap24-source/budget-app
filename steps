@@ -1,0 +1,44 @@
+Build plan
+
+Phase 1: Data and logic (no visuals yet)
+
+Decide your data shape. You need two things:
+a list of categories, each with a name and a monthly budget
+a list of transactions, each with an amount, a date and a category
+Save and load. Write two small functions that store this data in localStorage and read it back, so nothing disappears when you refresh. Start with some hard-coded test categories and transactions.
+Write the month logic. For a given month, work out the transactions that belong to it, the total spent per category, and the remaining budget per category.
+Write the week logic. This is the tricky part, so do it separately and test it in the browser console:
+split the month into weeks and divide each category’s budget equally
+walk through the weeks in order, adding the leftover (or subtracting the overspend) from the previous week
+decide how to handle weeks that straddle two months (for example, assign each week to the month where it starts)
+
+Phase 2: Main screen
+
+Build the page skeleton. Add a header with the month label and the view toggle (weekly/monthly), a scrollable category list, and a placeholder for the + button.
+Render the category rows. Loop over your categories and draw one row each, with the name, the numbers (“42 / 100 €”) and a progress bar. The bar’s width is spent ÷ budget, capped at 100%.
+Add color states. Make the bar change color as it nears or exceeds the limit (for example green, then orange, then red).
+Connect the view toggle. Switching between monthly and weekly re-runs the render using the matching logic from steps 3 and 4. In weekly mode you’ll also need a way to choose which week you’re looking at.
+
+Phase 3: Adding entries
+
+Build the + button and the entry screen. Make a floating button at the bottom right that opens a full-screen overlay, hidden by default.
+Build the form. Use a big amount input at the top, then a date input defaulting to today and a category dropdown at the bottom. Add a save button and a close button.
+Connect the form to your data. On save, validate the input, create a transaction object, add it to the list, save to localStorage, close the overlay and re-render the main screen. The progress bars should now update.
+
+Phase 4: Month navigation
+
+Keep a “currently selected month” variable. Everything in steps 3 to 8 should read from it instead of always using today.
+Make the month label clickable. Clicking it opens a picker (a simple list of months works) and selecting one updates the variable and re-renders.
+
+Phase 5: Category detail view
+
+Build the detail screen. Clicking a category row opens a screen showing that category’s transactions for the selected month, sorted by date, with a back button.
+Add statistics. Good first candidates are average per transaction, the largest transaction, the daily average, and a projection of where you’ll land by month end.
+Add edit and delete for transactions. You will need this the first time you mistype an amount.
+
+Phase 6: Polish and deployment
+
+Make it mobile-friendly. Check tap targets, the number keypad on the amount input (inputmode="decimal") and scrolling.
+Add a way to manage categories, meaning add, rename and change a budget. You can postpone this by hard-coding categories until the rest works.
+Push to GitHub Pages and test on your phone.
+Back up your data. Since localStorage lives in one browser, add an export/import button so you can’t lose everything by clearing your browser data.

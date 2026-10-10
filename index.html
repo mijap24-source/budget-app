@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Budget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ==================== PAGE: BUDGET ==================== -->
+    <main id="page-budget" class="page">
+
+        <div id="month-wrap">
+            <div id="month-bar">
+                <button id="prev-month" class="arrow-btn" aria-label="Previous month">&#8249;</button>
+                <div id="month-label"></div>
+                <button id="next-month" class="arrow-btn" aria-label="Next month">&#8250;</button>
+            </div>
+            <div id="month-list"></div>
+        </div>
+
+        <section id="total-box">
+            <div id="total-top">
+                <div id="total-label"></div>
+                <button id="income-button" class="text-btn">Income</button>
+            </div>
+            <div id="total-amount"></div>
+            <div id="total-sub">
+                <span id="total-of"></span>
+                <span id="total-percent"></span>
+            </div>
+            <div id="total-bar"></div>
+        </section>
+
+        <div id="list-header">
+            <span>Categories</span>
+            <button id="edit-budgets-button" class="text-btn">Edit budgets</button>
+        </div>
+        <div id="category-list"></div>
+    </main>
+
+    <!-- ==================== PAGE: STATISTICS ==================== -->
+    <main id="page-stats" class="page" hidden>
+        <h1 class="page-title">Statistics</h1>
+
+        <section class="panel">
+            <div class="panel-title">Spending trend</div>
+            <div class="panel-sub">Total spent per month, last 12 months</div>
+            <div id="trend-chart"></div>
+            <div id="trend-detail"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <div class="panel-title">By category</div>
+                    <div id="stats-range" class="panel-sub"></div>
+                </div>
+                <div id="stat-toggle" class="segmented">
+                    <button type="button" data-mode="average" class="active">Average</button>
+                    <button type="button" data-mode="median">Median</button>
+                </div>
+            </div>
+            <div id="stats-list"></div>
+        </section>
+    </main>
+
+    <!-- ==================== PAGE: SAVINGS ==================== -->
+    <main id="page-savings" class="page" hidden>
+        <h1 class="page-title">Savings</h1>
+
+        <section id="savings-total-box">
+            <div id="savings-total-label">Total saved</div>
+            <div id="savings-total"></div>
+        </section>
+
+        <div id="savings-list"></div>
+    </main>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <button id="add-button" aria-label="Add transaction">+</button>
+
+    <nav id="tab-bar">
+        <button class="tab active" data-page="budget">Budget</button>
+        <button class="tab" data-page="stats">Statistics</button>
+        <button class="tab" data-page="savings">Savings</button>
+    </nav>
+
+    <!-- ==================== POPUPS ==================== -->
+    <div id="backdrop"></div>
+
+    <div id="entry-screen">
+        <div id="type-toggle" class="segmented">
+            <button type="button" data-type="expense" class="active">Expense</button>
+            <button type="button" data-type="income">Income</button>
+        </div>
+
+        <input id="number" type="text" placeholder="00€" inputmode="numeric" autocomplete="off">
+
+        <input id="description" type="text" placeholder="Description (optional)" maxlength="60" autocomplete="off">
+
+        <div id="pick-row">
+            <input id="date" type="date">
+            <select id="category"></select>
+        </div>
+
+        <button id="save">Save</button>
+    </div>
+
+    <div id="category-screen">
+        <div id="category-head">
+            <div id="category-top">
+                <div id="category-title"></div>
+                <button id="edit-budget-button" class="text-btn">Edit budget</button>
+            </div>
+            <div id="category-line">
+                <div id="category-amounts"></div>
+                <div id="category-percent"></div>
+            </div>
+            <div id="category-bar"></div>
+        </div>
+
+        <div id="category-transactions"></div>
+
+        <div id="category-footer">
+            <div id="remaining-box">
+                <div id="remaining-label"></div>
+                <div id="remaining-amount"></div>
+            </div>
+            <div id="category-message" class="message">
+                <div id="category-message-title"></div>
+                <div id="category-message-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="income-screen">
+        <div id="income-title"></div>
+        <div id="income-total"></div>
+        <div id="income-list"></div>
+    </div>
+
+    <!-- Small popup used for editing budgets, savings goals, adding / taking out savings -->
+    <div id="sheet-backdrop"></div>
+    <div id="sheet">
+        <div id="sheet-title"></div>
+        <div id="sheet-fields"></div>
+        <div id="sheet-error"></div>
+        <div id="sheet-buttons">
+            <button id="sheet-cancel" type="button">Cancel</button>
+            <button id="sheet-confirm" type="button">Save</button>
+        </div>
+    </div>
+
+    <script src="messages.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

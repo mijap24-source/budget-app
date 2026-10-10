@@ -1,0 +1,1540 @@
+/* ================================
+   1. COLOUR PALETTE & RESET
+================================ */
+
+:root {
+    --bg: #F5F1E9;
+    --surface: #FFFEFA;
+    --surface-alt: #EAE5DA;
+
+    --text: #292D26;
+    --text-muted: #77796D;
+
+    --green: #355C43;
+    --green-dark: #254431;
+    --green-light: #DCE6D8;
+
+    --wine: #7A1F36;
+    --red: #C84C58;
+    --red-light: #E9A0A0;
+
+    --border: #DDD8CC;
+    --track: #E6E0D5;
+
+    --shadow:
+        0 8px 24px rgba(47, 43, 33, 0.07);
+
+    --radius: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: var(--bg);
+}
+
+body {
+    margin: 0 auto;
+    padding: 36px 24px 180px;
+    max-width: 760px;
+    min-height: 100vh;
+
+    background: var(--bg);
+    color: var(--text);
+
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.page[hidden] {
+    display: none;
+}
+
+.page-title {
+    margin: 0 0 24px;
+
+    color: var(--green-dark);
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(26px, 6vw, 36px);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+}
+
+/* small text-only buttons ("Income", "Edit budgets", "Edit budget") */
+.text-btn {
+    padding: 6px 10px;
+    margin: -6px -10px;
+
+    background: transparent;
+    color: var(--green);
+
+    border: none;
+    border-radius: 10px;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+
+    cursor: pointer;
+}
+
+.text-btn:hover {
+    color: var(--wine);
+}
+
+
+/* ================================
+   2. MONTH SELECTOR
+================================ */
+
+#month-wrap {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+#month-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.arrow-btn {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    padding: 0 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--surface);
+    color: var(--green-dark);
+
+    border: 1px solid var(--border);
+    border-radius: 50%;
+
+    font: inherit;
+    font-size: 26px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        color 180ms ease,
+        opacity 180ms ease;
+}
+
+.arrow-btn:hover:not(:disabled) {
+    background: var(--green-light);
+}
+
+.arrow-btn:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+.arrow-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+#month-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 12px;
+
+    background: transparent;
+    color: var(--green-dark);
+
+    border: none;
+    border-radius: 12px;
+    box-shadow: none;
+
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(20px, 5.8vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    white-space: nowrap;
+
+    cursor: pointer;
+    user-select: none;
+
+    transition: color 180ms ease;
+}
+
+#month-label::after {
+    content: "";
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+
+    border-right: 2px solid var(--green);
+    border-bottom: 2px solid var(--green);
+
+    transform: translateY(-2px) rotate(45deg);
+    transition: border-color 180ms ease;
+}
+
+#month-label:hover {
+    color: var(--wine);
+}
+
+#month-label:hover::after {
+    border-color: var(--wine);
+}
+
+#month-list {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: 60;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 210px;
+    max-height: 50vh;
+    margin-top: 6px;
+    padding: 8px;
+    overflow-y: auto;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+}
+
+#month-list:empty {
+    display: none;
+}
+
+#month-list > div {
+    padding: 12px 15px;
+    border-radius: 9px;
+
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#month-list > div:hover {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+
+#month-list > div.selected {
+    background: var(--surface-alt);
+    font-weight: 700;
+}
+
+
+/* ================================
+   3. TOTAL SPENT (TOP OF BUDGET PAGE)
+================================ */
+
+#total-box {
+    margin-bottom: 28px;
+    padding: 22px 22px 24px;
+
+    background: var(--surface);
+    border: 1px solid rgba(221, 216, 204, 0.85);
+    border-radius: 24px;
+    box-shadow: 0 3px 12px rgba(47, 43, 33, 0.035);
+}
+
+#total-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+#total-label {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+#total-amount {
+    margin: 4px 0 2px;
+
+    color: var(--green-dark);
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(54px, 15vw, 76px);
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+#total-amount.over {
+    color: var(--wine);
+}
+
+#total-sub {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+#total-percent {
+    color: var(--text);
+    font-weight: 700;
+}
+
+#total-bar .bar {
+    height: 20px;
+}
+
+
+/* ================================
+   4. CATEGORY CARDS
+================================ */
+
+#list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 2px 12px;
+
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+#category-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+.card,
+.fund-card {
+    min-width: 0;
+    padding: 17px 20px 19px;
+
+    background: var(--surface);
+    border: 1px solid rgba(221, 216, 204, 0.85);
+    border-radius: var(--radius);
+
+    box-shadow: 0 3px 12px rgba(47, 43, 33, 0.035);
+}
+
+.card {
+    cursor: pointer;
+
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        border-color 180ms ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: #B6C7B5;
+}
+
+.card:active {
+    transform: scale(0.99);
+}
+
+.card-name {
+    margin-bottom: 4px;
+
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* "12€ / 100€" on the left, percentage on the right */
+.card-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.amounts .spent {
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.amounts .of-budget {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.card-percent {
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 650;
+}
+
+
+/* ================================
+   5. TRANSACTION ROWS (swipe to delete)
+================================ */
+
+/* the wrapper clips the row while it slides over the red button */
+.trans-wrap {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+}
+
+.trans-delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+
+    width: 88px;
+
+    background: var(--red);
+    color: #FFFFFF;
+
+    border: none;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.trans-delete:hover {
+    background: #B03F4B;
+}
+
+.trans-row {
+    position: relative;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    padding: 18px 2px;
+
+    background: var(--surface);
+    cursor: pointer;
+
+    transition: transform 220ms ease;
+}
+
+.trans-row.open {
+    transform: translateX(-88px);
+}
+
+.trans-date {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.trans-desc {
+    overflow: hidden;
+
+    font-size: 15px;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trans-amount {
+    font-size: 19px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.trans-amount.income {
+    color: var(--green);
+}
+
+.empty-note {
+    padding: 22px 2px;
+
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+
+/* ================================
+   6. MESSAGE + REMAINING BOXES
+================================ */
+
+.message {
+    padding: 14px 16px;
+    border-radius: 14px;
+}
+
+#category-message-title {
+    margin-bottom: 2px;
+    font-weight: 700;
+}
+
+#category-message-text {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.message.green  { background: var(--green-light); color: var(--green-dark); }
+.message.yellow { background: #F3E6B8; color: #5C4A0F; }
+.message.red    { background: var(--red-light); color: var(--wine); }
+
+#remaining-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 14px 16px;
+
+    background: var(--surface-alt);
+    color: var(--green-dark);
+    border-radius: 14px;
+}
+
+#remaining-box.over {
+    background: var(--red-light);
+    color: var(--wine);
+}
+
+#remaining-label {
+    font-size: 13px;
+    font-weight: 650;
+    opacity: 0.8;
+}
+
+#remaining-amount {
+    font-family: "Archivo Black", sans-serif;
+    font-size: 26px;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+}
+
+
+/* ================================
+   7. PROGRESS BARS
+================================ */
+
+.bar {
+    width: 100%;
+    height: 12px;
+
+    overflow: hidden;
+
+    background: var(--track);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+}
+
+.progress-bar {
+    height: 100%;
+    min-width: 0;
+
+    border-radius: inherit;
+
+    transition:
+        width 400ms ease,
+        background-color 400ms ease;
+}
+
+
+/* ================================
+   8. ADD BUTTON + TAB BAR
+================================ */
+
+#add-button {
+    position: fixed;
+    right: max(24px, calc((100vw - 760px) / 2 + 24px));
+    bottom: 88px;
+    z-index: 30;
+
+    width: 60px;
+    height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 20px;
+
+    background: var(--green);
+    color: #FFFFFF;
+
+    font: inherit;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow: 0 8px 22px rgba(37, 68, 49, 0.28);
+
+    transition:
+        background 180ms ease,
+        transform 180ms ease,
+        box-shadow 180ms ease;
+}
+
+#add-button:hover {
+    background: var(--green-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 26px rgba(37, 68, 49, 0.3);
+}
+
+#add-button:active {
+    transform: scale(0.94);
+}
+
+#tab-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+
+    padding: 8px max(12px, calc((100vw - 760px) / 2 + 12px)) calc(8px + env(safe-area-inset-bottom, 0px));
+
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+
+.tab {
+    padding: 12px 8px;
+
+    background: transparent;
+    color: var(--text-muted);
+
+    border: none;
+    border-radius: 14px;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        color 180ms ease;
+}
+
+.tab:hover {
+    color: var(--green-dark);
+}
+
+.tab.active {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+
+
+/* ================================
+   9. BACKDROP
+================================ */
+
+#backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+
+    background: rgba(27, 34, 27, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    display: none;
+}
+
+
+/* ================================
+   10. ADD ENTRY POPUP
+================================ */
+
+#entry-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 50;
+
+    display: none;
+
+    width: min(420px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+
+    padding: 22px 26px 24px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 26px;
+
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+
+    transform: translate(-50%, -50%);
+}
+
+/* the pill switch: Expense / Income, Average / Median */
+.segmented {
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+
+    padding: 3px;
+
+    background: var(--surface-alt);
+    border-radius: 13px;
+}
+
+.segmented button {
+    padding: 8px 14px;
+
+    background: transparent;
+    color: var(--text-muted);
+
+    border: none;
+    border-radius: 10px;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        color 180ms ease;
+}
+
+.segmented button.active {
+    background: var(--green);
+    color: #FFFFFF;
+}
+
+#type-toggle {
+    display: grid;
+    width: 100%;
+}
+
+#type-toggle button {
+    padding: 10px 14px;
+    font-size: 14px;
+}
+
+/* Large amount entry area */
+
+#number {
+    display: block;
+    width: 100%;
+    height: clamp(120px, 20vh, 180px);
+
+    margin: 8px 0 0;
+    padding: 0;
+
+    background: transparent;
+    color: var(--green-dark);
+
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(58px, 12vw, 82px);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+
+    text-align: center;
+
+    outline: none;
+    appearance: textfield;
+    -moz-appearance: textfield;
+
+    transition: border-color 180ms ease;
+}
+
+#number::-webkit-inner-spin-button,
+#number::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#number::placeholder {
+    color: #D4CEC2;
+    opacity: 1;
+}
+
+#number:focus {
+    border-bottom-color: var(--green);
+}
+
+/* Description */
+
+#description {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+
+    margin-top: 14px;
+    padding: 12px 14px;
+
+    background: var(--bg);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    font: inherit;
+    font-size: 15px;
+
+    outline: none;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+#description::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+/* Date and category row */
+
+#pick-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 76px;
+    gap: 10px;
+
+    margin: 12px 0 20px;
+    align-items: stretch;
+}
+
+/* for income there is no category, the date takes the whole row */
+#pick-row.income {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#pick-row.income #category {
+    display: none;
+}
+
+/* Date field */
+
+#date {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+
+    padding: 10px 9px;
+
+    background: var(--bg);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    font: inherit;
+    font-size: 13px;
+
+    outline: none;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+/* Compact category selector */
+
+#category {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+
+    padding: 8px 4px;
+
+    background: var(--green-light);
+    color: var(--green-dark);
+
+    border: 1px solid #C5D5C2;
+    border-radius: 13px;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 650;
+    text-align: center;
+
+    outline: none;
+    cursor: pointer;
+}
+
+#date:focus,
+#category:focus,
+#description:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(53, 92, 67, 0.12);
+}
+
+/* Save button */
+
+#save {
+    width: 100%;
+    min-height: 52px;
+
+    margin-top: 6px;
+    padding: 14px 20px;
+
+    background: var(--wine);
+    color: #FFFFFF;
+
+    border: none;
+    border-radius: 14px;
+
+    font: inherit;
+    font-size: 15px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 12px rgba(122, 31, 54, 0.16);
+
+    transition:
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+#save:hover {
+    background: #5F172A;
+}
+
+#save:active {
+    transform: scale(0.98);
+}
+
+
+/* ================================
+   11. CATEGORY + INCOME POPUPS
+   (the header and the bottom boxes stay put,
+    only the transaction list scrolls)
+================================ */
+
+#category-screen,
+#income-screen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 50;
+
+    display: none;
+    flex-direction: column;
+
+    width: min(500px, calc(100vw - 32px));
+    height: min(680px, calc(100dvh - 40px));
+    overflow: hidden;
+
+    padding: 26px 26px 22px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+
+    transform: translate(-50%, -50%);
+}
+
+#income-screen {
+    height: min(520px, calc(100dvh - 40px));
+}
+
+#category-head {
+    flex: 0 0 auto;
+}
+
+#category-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+#category-title,
+#income-title {
+    color: var(--green-dark);
+    font-size: 25px;
+    font-weight: 750;
+    letter-spacing: -0.035em;
+}
+
+#category-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 6px 0 10px;
+}
+
+#category-percent {
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 650;
+}
+
+/* the scrolling part */
+#category-transactions,
+#income-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+
+    margin-top: 14px;
+}
+
+#category-footer {
+    flex: 0 0 auto;
+
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 10px;
+
+    padding-top: 14px;
+}
+
+#income-total {
+    margin: 4px 0 0;
+
+    color: var(--green-dark);
+    font-family: "Archivo Black", sans-serif;
+    font-size: 44px;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+}
+
+
+/* ================================
+   12. SMALL POPUP (SHEET)
+================================ */
+
+#sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+
+    background: rgba(27, 34, 27, 0.55);
+
+    display: none;
+}
+
+#sheet {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 80;
+
+    display: none;
+    flex-direction: column;
+
+    width: min(380px, calc(100vw - 32px));
+    max-height: calc(100dvh - 40px);
+    overflow: hidden;
+
+    padding: 24px;
+
+    background: var(--surface);
+    color: var(--text);
+
+    border-radius: 22px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
+
+    transform: translate(-50%, -50%);
+}
+
+/* only the list of fields scrolls; the title and the buttons stay in view */
+#sheet-fields {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#sheet-title,
+#sheet-error,
+#sheet-buttons {
+    flex: 0 0 auto;
+}
+
+#sheet-title {
+    margin-bottom: 14px;
+
+    color: var(--green-dark);
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.sheet-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+
+    padding: 6px 0;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.sheet-field input {
+    width: 110px;
+    min-height: 44px;
+    padding: 8px 12px;
+
+    background: var(--bg);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    font: inherit;
+    font-size: 16px;
+    text-align: right;
+
+    outline: none;
+}
+
+.sheet-field input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(53, 92, 67, 0.12);
+}
+
+#sheet-error {
+    min-height: 20px;
+    margin-top: 6px;
+
+    color: var(--wine);
+    font-size: 13px;
+    font-weight: 650;
+}
+
+#sheet-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#sheet-buttons button {
+    min-height: 48px;
+
+    border: none;
+    border-radius: 14px;
+
+    font: inherit;
+    font-size: 15px;
+    font-weight: 650;
+
+    cursor: pointer;
+}
+
+#sheet-cancel {
+    background: var(--surface-alt);
+    color: var(--text);
+}
+
+#sheet-confirm {
+    background: var(--wine);
+    color: #FFFFFF;
+}
+
+#sheet-confirm:hover {
+    background: #5F172A;
+}
+
+
+/* ================================
+   13. STATISTICS PAGE
+================================ */
+
+.panel {
+    margin-bottom: 14px;
+    padding: 22px 20px;
+
+    background: var(--surface);
+    border: 1px solid rgba(221, 216, 204, 0.85);
+    border-radius: 22px;
+    box-shadow: 0 3px 12px rgba(47, 43, 33, 0.035);
+}
+
+.panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.panel-title {
+    color: var(--green-dark);
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.panel-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.panel-note {
+    padding-top: 14px;
+
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+/* trend bar chart */
+
+#trend-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+
+    height: 168px;
+    margin-top: 18px;
+    padding-bottom: 2px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.trend-col {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0;
+
+    background: transparent;
+    border: none;
+
+    font: inherit;
+    cursor: pointer;
+}
+
+.trend-area {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.trend-bar {
+    width: 100%;
+    max-width: 26px;
+
+    background: #B6C7B5;
+    border-radius: 4px 4px 0 0;
+
+    transition:
+        background 180ms ease,
+        height 300ms ease;
+}
+
+.trend-bar.zero {
+    background: var(--track);
+}
+
+.trend-col:hover .trend-bar {
+    background: #8FAA93;
+}
+
+.trend-col.selected .trend-bar {
+    background: var(--green);
+}
+
+.trend-label {
+    margin-top: 6px;
+
+    color: var(--text-muted);
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.trend-col.selected .trend-label {
+    color: var(--green-dark);
+    font-weight: 700;
+}
+
+#trend-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+
+    margin-top: 12px;
+}
+
+.trend-detail-main {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.trend-detail-avg {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* per-category statistics */
+
+.stat-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-of-type {
+    border-bottom: none;
+}
+
+.stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.stat-name {
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.mini-track {
+    height: 6px;
+    margin-top: 8px;
+
+    overflow: hidden;
+
+    background: var(--track);
+    border-radius: 100px;
+}
+
+.mini-fill {
+    height: 100%;
+
+    background: var(--green);
+    border-radius: inherit;
+
+    transition: width 300ms ease;
+}
+
+
+/* ================================
+   14. SAVINGS PAGE
+================================ */
+
+#savings-total-box {
+    margin-bottom: 20px;
+    padding: 22px;
+
+    background: var(--surface);
+    border: 1px solid rgba(221, 216, 204, 0.85);
+    border-radius: 24px;
+    box-shadow: 0 3px 12px rgba(47, 43, 33, 0.035);
+}
+
+#savings-total-label {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+#savings-total {
+    color: var(--green-dark);
+    font-family: "Archivo Black", sans-serif;
+    font-size: clamp(44px, 12vw, 60px);
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+
+#savings-list {
+    display: grid;
+    gap: 12px;
+}
+
+.fund-note {
+    min-height: 20px;
+    margin-top: 8px;
+
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.fund-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.fund-btn {
+    min-height: 44px;
+    padding: 8px;
+
+    background: var(--green-light);
+    color: var(--green-dark);
+
+    border: none;
+    border-radius: 12px;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.fund-btn:hover {
+    background: #CBDBC6;
+}
+
+.fund-btn:active {
+    transform: scale(0.97);
+}
+
+
+/* ================================
+   15. SMALL SCREENS + ACCESSIBILITY
+================================ */
+
+@media (max-width: 540px) {
+    body {
+        padding: 24px 16px 170px;
+    }
+
+    .arrow-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    #category-list {
+        gap: 10px;
+    }
+
+    .card,
+    .fund-card {
+        padding: 16px 18px 18px;
+    }
+
+    #add-button {
+        right: 20px;
+        bottom: 84px;
+        width: 58px;
+        height: 58px;
+        border-radius: 19px;
+    }
+
+    #entry-screen {
+        padding: 20px 22px 22px;
+        border-radius: 22px;
+    }
+
+    #category-screen,
+    #income-screen {
+        padding: 22px 20px 18px;
+        border-radius: 22px;
+    }
+
+    #category-footer {
+        grid-template-columns: 112px minmax(0, 1fr);
+    }
+
+    #remaining-amount {
+        font-size: 22px;
+    }
+
+    #pick-row {
+        grid-template-columns: minmax(0, 1fr) 72px;
+        gap: 8px;
+    }
+
+    #pick-row.income {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #date,
+    #category {
+        min-height: 56px;
+    }
+
+    .panel {
+        padding: 20px 16px;
+    }
+}
+
+@media (max-height: 640px) {
+    #number {
+        height: 100px;
+        font-size: 54px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

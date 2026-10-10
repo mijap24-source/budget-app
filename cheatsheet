@@ -1,0 +1,43 @@
+// GENERAL NOTES
+// [] - array. array stores a list of things
+// {} - object. objects store information about one thing
+// === equal, <= less than or equal, > greater than, >= greater than or equal, != not equal
+// && - and, || - or
+// ? a : b - shorthand for if a is true, return a, otherwise return b
+// . - used to access properties of an object (e.g. object.property)
+// => - shorthand for function (e.g. (parameter) => { code })
+// i - index of an array, used in loops to keep track of which item in the array is being looked at
+// i++ - increment the index of an array by 1 (e.g. i++ means i = i + 1)
+
+// let (name) - creating a variable that can be reassigned
+// function name(parameter) - a block of code that can be called to do something (needs a return)
+// querySelector(...) - finds an element in the webpage
+// querySelectorAll(...) - finds all elements in the webpage that match a selector
+// getElementById(...) - finds an element in the webpage by its id
+// for - loops through a block of code a number of times
+// addEventListener(...) - listens for an event on an element and runs a function when that event happens
+// addAppend(...) - adds an element to the end of another element
+// addAppendChild(...) - adds an element to the end of another element
+// join - joins the elements of an array into a string, with a specified separator between each element
+// async - allows a function to run asynchronously, meaning it can run in the background without blocking other code from running
+// try - runs a block of code and catches any errors that occur
+// catch - runs a block of code if an error occurs in the try block
+// await - waits for a promise to resolve before continuing to the next line of code
+// findCombos(...) - a function that finds all combinations of items that add up to a target value
+// console.log(...) - print whatver is in () in console
+
+// document. - the webpage itself
+// textContent - gets or sets the text content of an element
+// className - gets or sets the class name of an element
+// body - the body of the webpage (html)
+// hidden - a class that hides an element (css)
+// math - a built-in object that provides mathematical functions and constants
+// math.min (a, b) - returns the smaller of two numbers (e.g. math.min(1, 2) returns 1)
+// length - a property that returns the number of elements in an array or the number of characters in a string
+// map - a method that creates a new array by applying a function to each element of an existing array
+// concat - a method that combines two or more arrays into a new array
+// innerHTML - gets or sets the HTML content of an element
+// forEach - a method that executes a provided function once for each array element
+// classList - a property that returns the class names of an element as a DOMTokenList object
+// domtokenlist - an object that represents a list of class names for an element
+// class - a property that gets or sets the class name of an element
