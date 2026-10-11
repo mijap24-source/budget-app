@@ -7,7 +7,7 @@
 //      calculations           9. Small popup (sheet) for editing numbers
 //   4. Month navigation      10. Statistics + trend chart
 //   5. Budget page           11. Savings page
-//                            12. Pages / navigation / start
+//                            12. Popups + back button / pages / start
 // =====================================================================
 
 
@@ -186,6 +186,8 @@ let openCategoryId = null;
 let statMode = "average";
 let trendSelected = null;
 let entryType = "expense";
+let editing = null;      // null = the entry popup adds something new, otherwise {kind, id}
+let layers = [];         // the popups that are open right now, bottom to top (see section 12)
 
 
 // =====================================================================
@@ -446,8 +448,7 @@ byId("edit-budgets-button").addEventListener("click", editAllBudgets);
 
 function openCategory(categoryId) {
     openCategoryId = categoryId;
-    byId("category-screen").style.display = "flex";
-    byId("backdrop").style.display = "block";
+    openLayer("category");
     renderCategoryPopup();
 }
 
@@ -516,11 +517,18 @@ function closeOpenRows() {
 }
 
 // One line in a list: date | description | amount.
-// Click it (or swipe it left) and it slides over to show a red Delete button.
+// Click it (or swipe it left) and it slides over to show Edit and Delete buttons.
 function makeTransactionRow(item, kind) {
     let id = kind === "income" ? item.id : item.trans;
 
     let wrap = el("div", "trans-wrap");
+
+    let editButton = el("button", "trans-edit", "Edit");
+    editButton.type = "button";
+    editButton.addEventListener("click", function(event) {
+        event.stopPropagation();
+        openEdit(kind, id);
+    });
 
     let deleteButton = el("button", "trans-delete", "Delete");
     deleteButton.type = "button";
@@ -562,6 +570,7 @@ function makeTransactionRow(item, kind) {
         }
     });
 
+    wrap.appendChild(editButton);
     wrap.appendChild(deleteButton);
     wrap.appendChild(row);
     return wrap;
@@ -597,8 +606,7 @@ byId("edit-budget-button").addEventListener("click", function() {
 // =====================================================================
 
 function openIncomeScreen() {
-    byId("income-screen").style.display = "flex";
-    byId("backdrop").style.display = "block";
+    openLayer("income");
     renderIncomeScreen();
 }
 
@@ -664,11 +672,43 @@ byId("type-toggle").addEventListener("click", function(event) {
     if (button) setEntryType(button.dataset.type);
 });
 
+// the + button: a new, empty entry
 function openEntry() {
+    editing = null;
+    byId("entry-screen").classList.remove("editing");
+    byId("save").textContent = "Save";
     setEntryType("expense");
     byId("date").value = todayString();
-    byId("entry-screen").style.display = "block";
-    byId("backdrop").style.display = "block";
+    openLayer("entry");
+    byId("number").focus();
+}
+
+// one expense or income entry, by its id
+function findItem(kind, id) {
+    let list = kind === "income" ? incomes : transactions;
+    let field = kind === "income" ? "id" : "trans";
+    for (let i = 0; i < list.length; i++) {
+        if (list[i][field] === id) return list[i];
+    }
+    return null;
+}
+
+// the "Edit" button in a list: the same popup, filled in with the entry
+function openEdit(kind, id) {
+    let item = findItem(kind, id);
+    if (!item) return;
+
+    editing = {kind: kind, id: id};
+    byId("entry-screen").classList.add("editing");
+    byId("save").textContent = "Save changes";
+
+    setEntryType(kind);
+    byId("number").value = item.amount + "€";
+    byId("description").value = item.description || "";
+    byId("date").value = item.date;
+    if (kind === "expense") byId("category").value = item.categoryId;
+
+    openLayer("entry");
     byId("number").focus();
 }
 
@@ -691,7 +731,17 @@ byId("save").addEventListener("click", function() {
     let date = byId("date").value || todayString();
     let description = byId("description").value.trim();
 
-    if (entryType === "income") {
+    if (editing) {
+        // change the existing entry
+        let item = findItem(editing.kind, editing.id);
+        if (item) {
+            item.amount = amount;
+            item.date = date;
+            item.description = description;
+            if (editing.kind === "expense") item.categoryId = Number(byId("category").value);
+        }
+        saveData(editing.kind === "income" ? "incomes" : "transactions", editing.kind === "income" ? incomes : transactions);
+    } else if (entryType === "income") {
         incomes.push({id: nextId(incomes, "id"), amount: amount, date: date, description: description});
         saveData("incomes", incomes);
     } else {
@@ -707,7 +757,7 @@ byId("save").addEventListener("click", function() {
 
     byId("number").value = "";
     byId("description").value = "";
-    closeAll();
+    closeTopLayer();   // only the entry popup; if it was opened from a category, that one stays
     refresh();
 });
 
@@ -715,18 +765,32 @@ byId("add-button").addEventListener("click", openEntry);
 
 
 // =====================================================================
-// 9. SMALL POPUP ("sheet") FOR EDITING NUMBERS
-//    openSheet({ title, confirmText, fields: [{label, name, value}], onConfirm(values) })
-//    onConfirm can return a text to show as an error and keep the popup open.
+// 9. SMALL POPUP ("sheet") FOR EDITING NUMBERS AND NAMES
+//    openSheet({
+//        title, confirmText,
+//        fields: [{label, name, value, type, placeholder}],   type "text" = a name, otherwise a number
+//        onConfirm(values),            can return a text to show as an error and keep the popup open
+//        deleteText, onDelete()        optional: adds a Delete button (it asks for a second tap)
+//    })
 // =====================================================================
 
 let sheetInputs = [];
 let sheetOnConfirm = null;
+let sheetOnDelete = null;
+let sheetDeleteSure = "";
 
 function openSheet(options) {
     byId("sheet-title").textContent = options.title;
     byId("sheet-confirm").textContent = options.confirmText || "Save";
     byId("sheet-error").textContent = "";
+
+    // the optional Delete button
+    let deleteButton = byId("sheet-delete");
+    deleteButton.classList.remove("sure");
+    deleteButton.textContent = options.deleteText || "Delete";
+    deleteButton.style.display = options.onDelete ? "block" : "none";
+    sheetOnDelete = options.onDelete || null;
+    sheetDeleteSure = options.deleteSure || "Tap again to delete";
 
     let box = byId("sheet-fields");
     box.innerHTML = "";
@@ -734,50 +798,60 @@ function openSheet(options) {
 
     for (let i = 0; i < options.fields.length; i++) {
         let field = options.fields[i];
+        let isText = field.type === "text";
 
         let label = el("label", "sheet-field");
         label.appendChild(el("span", "", field.label));
 
         let input = el("input");
         input.type = "text";
-        input.inputMode = "numeric";
-        input.placeholder = "0";
         input.autocomplete = "off";
         input.value = (field.value === undefined || field.value === "") ? "" : String(field.value);
 
-        // only digits allowed; Enter confirms
-        input.addEventListener("input", function() {
-            input.value = input.value.replace(/[^0-9]/g, "");
-        });
+        if (isText) {
+            input.className = "text-input";
+            input.maxLength = 30;
+            input.placeholder = field.placeholder || "";
+        } else {
+            input.inputMode = "numeric";
+            input.placeholder = "0";
+            // only digits allowed
+            input.addEventListener("input", function() {
+                input.value = input.value.replace(/[^0-9]/g, "");
+            });
+        }
+
+        // Enter confirms
         input.addEventListener("keydown", function(event) {
             if (event.key === "Enter") byId("sheet-confirm").click();
         });
 
         label.appendChild(input);
         box.appendChild(label);
-        sheetInputs.push({name: field.name, input: input});
+        sheetInputs.push({name: field.name, input: input, isText: isText});
     }
 
     sheetOnConfirm = options.onConfirm;
-    byId("sheet-backdrop").style.display = "block";
-    byId("sheet").style.display = "flex";
+    if (layers.indexOf("sheet") === -1) openLayer("sheet");
     if (sheetInputs.length > 0) sheetInputs[0].input.focus();
 }
 
 function closeSheet() {
-    byId("sheet").style.display = "none";
-    byId("sheet-backdrop").style.display = "none";
-    sheetOnConfirm = null;
+    if (layers[layers.length - 1] === "sheet") closeTopLayer();
 }
 
 byId("sheet-confirm").addEventListener("click", function() {
     if (!sheetOnConfirm) return;
 
-    // collect the numbers (an empty field counts as 0)
+    // collect the values (an empty number field counts as 0)
     let values = {};
     for (let i = 0; i < sheetInputs.length; i++) {
         let text = sheetInputs[i].input.value;
-        values[sheetInputs[i].name] = text === "" ? 0 : Number(text);
+        if (sheetInputs[i].isText) {
+            values[sheetInputs[i].name] = text.trim();
+        } else {
+            values[sheetInputs[i].name] = text === "" ? 0 : Number(text);
+        }
     }
 
     let error = sheetOnConfirm(values);
@@ -787,6 +861,23 @@ byId("sheet-confirm").addEventListener("click", function() {
     }
 
     closeSheet();
+    refresh();
+});
+
+// Delete: the first tap only asks "are you sure?", the second one deletes
+byId("sheet-delete").addEventListener("click", function() {
+    if (!sheetOnDelete) return;
+
+    let button = byId("sheet-delete");
+    if (!button.classList.contains("sure")) {
+        button.classList.add("sure");
+        button.textContent = sheetDeleteSure;
+        return;
+    }
+
+    let action = sheetOnDelete;
+    closeSheet();
+    action();
     refresh();
 });
 
@@ -983,15 +1074,29 @@ function renderSavings() {
             });
         });
 
-        let goalButton = el("button", "fund-btn", "Goal");
-        goalButton.type = "button";
-        goalButton.addEventListener("click", function() {
+        // Edit: change the name and the goal, or delete the whole fund
+        let editButton = el("button", "fund-btn", "Edit");
+        editButton.type = "button";
+        editButton.addEventListener("click", function() {
             openSheet({
-                title: "Goal for " + fund.name,
-                confirmText: "Save goal",
-                fields: [{label: "Goal", name: "goal", value: fund.goal}],
+                title: "Edit " + fund.name,
+                confirmText: "Save",
+                fields: [
+                    {label: "Name", name: "name", type: "text", value: fund.name},
+                    {label: "Goal", name: "goal", value: fund.goal}
+                ],
                 onConfirm: function(values) {
+                    if (values.name === "") return "Give the goal a name.";
+                    fund.name = values.name;
                     fund.goal = values.goal;
+                    saveSavings();
+                },
+                deleteText: "Delete this goal",
+                deleteSure: fund.saved > 0
+                    ? "Tap again: " + euro(fund.saved) + " saved here will be forgotten"
+                    : "Tap again to delete",
+                onDelete: function() {
+                    savings = savings.filter(function(entry) { return entry.id !== fund.id; });
                     saveSavings();
                 }
             });
@@ -999,12 +1104,34 @@ function renderSavings() {
 
         buttons.appendChild(addButton);
         buttons.appendChild(takeButton);
-        buttons.appendChild(goalButton);
+        buttons.appendChild(editButton);
         card.appendChild(buttons);
 
         list.appendChild(card);
     }
+
+    if (savings.length === 0) {
+        list.appendChild(el("div", "empty-note", "No savings goals yet. Add your first one below."));
+    }
 }
+
+// "New savings goal" button under the list
+byId("add-fund-button").addEventListener("click", function() {
+    openSheet({
+        title: "New savings goal",
+        confirmText: "Create",
+        fields: [
+            {label: "Name", name: "name", type: "text", value: "", placeholder: "e.g. New laptop"},
+            {label: "Goal", name: "goal", value: ""},
+            {label: "Already saved", name: "saved", value: ""}
+        ],
+        onConfirm: function(values) {
+            if (values.name === "") return "Give the goal a name.";
+            savings.push({id: nextId(savings, "id"), name: values.name, goal: values.goal, saved: values.saved});
+            saveSavings();
+        }
+    });
+});
 
 
 // =====================================================================
@@ -1016,15 +1143,89 @@ function isVisible(id) {
     return display !== "" && display !== "none";
 }
 
-// close every popup except the small "sheet"
-function closeAll() {
-    byId("entry-screen").style.display = "none";
-    byId("category-screen").style.display = "none";
-    byId("income-screen").style.display = "none";
-    byId("backdrop").style.display = "none";
-    byId("month-list").innerHTML = "";
-    openCategoryId = null;
+
+// ---------------------------------------------------------------------
+// POPUPS + THE BROWSER'S BACK BUTTON
+//
+// Every popup that opens is added to the list "layers" ("category",
+// "entry", "income", "sheet"; the last one is on top). Each one also
+// adds a step to the browser history, so pressing Back (or swiping back
+// on a phone) closes the top popup instead of leaving the app.
+//
+//   openLayer(name)   open a popup (and add a history step)
+//   closeTopLayer()   close the top popup (and remove its history step)
+//   closeAll()        close every popup
+// ---------------------------------------------------------------------
+
+// put the popup on screen
+function showLayer(name) {
+    if (name === "sheet") {
+        byId("sheet-backdrop").style.display = "block";
+        byId("sheet").style.display = "flex";
+    } else {
+        byId(name + "-screen").style.display = name === "entry" ? "block" : "flex";
+        byId("backdrop").style.display = "block";
+    }
 }
+
+// take the popup off the screen (the caller has already removed it from "layers")
+function hideLayer(name) {
+    if (name === "sheet") {
+        byId("sheet").style.display = "none";
+        byId("sheet-backdrop").style.display = "none";
+        sheetOnConfirm = null;
+        sheetOnDelete = null;
+        return;
+    }
+
+    byId(name + "-screen").style.display = "none";
+
+    if (name === "category") openCategoryId = null;
+
+    // leaving the edit mode: empty the form again
+    if (name === "entry" && editing) {
+        editing = null;
+        byId("entry-screen").classList.remove("editing");
+        byId("save").textContent = "Save";
+        byId("number").value = "";
+        byId("description").value = "";
+    }
+
+    // the dark background stays while any of the big popups is still open
+    let anyOpen = layers.some(function(layer) { return layer !== "sheet"; });
+    byId("backdrop").style.display = anyOpen ? "block" : "none";
+}
+
+function openLayer(name) {
+    layers.push(name);
+    history.pushState({depth: layers.length}, "");
+    showLayer(name);
+}
+
+function closeTopLayer() {
+    if (layers.length === 0) return;
+    hideLayer(layers.pop());
+    history.back();   // remove its history step; the popstate handler below then has nothing left to do
+}
+
+function closeAll() {
+    let count = layers.length;
+    while (layers.length > 0) hideLayer(layers.pop());
+    byId("month-list").innerHTML = "";
+    if (count > 0) history.go(-count);
+}
+
+// the Back button was pressed: close popups until we match the history again
+window.addEventListener("popstate", function(event) {
+    let depth = event.state && event.state.depth ? event.state.depth : 0;
+    while (layers.length > depth) hideLayer(layers.pop());
+
+    // Forward button: we can't bring a closed popup back, so just fix the step
+    if (layers.length < depth) history.replaceState({depth: layers.length}, "");
+});
+
+// a page reload keeps the old history state, so start from zero
+history.replaceState({depth: 0}, "");
 
 // draw whatever is on screen again (call after any change to the data)
 function refresh() {
@@ -1070,14 +1271,9 @@ byId("tab-bar").addEventListener("click", function(event) {
 
 byId("backdrop").addEventListener("click", closeAll);
 
-// Escape closes the small popup first, then the others
+// Escape closes the top popup
 document.addEventListener("keydown", function(event) {
-    if (event.key !== "Escape") return;
-    if (isVisible("sheet")) {
-        closeSheet();
-    } else {
-        closeAll();
-    }
+    if (event.key === "Escape") closeTopLayer();
 });
 
 renderCategoriesOptions();

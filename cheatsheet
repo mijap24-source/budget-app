@@ -41,3 +41,5 @@
 // classList - a property that returns the class names of an element as a DOMTokenList object
 // domtokenlist - an object that represents a list of class names for an element
 // class - a property that gets or sets the class name of an element
+
+changes

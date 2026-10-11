@@ -34,6 +34,10 @@
 html {
     min-height: 100%;
     background: var(--bg);
+
+    /* feels more like an app: no grey flash when tapping, no pull-to-refresh bounce */
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
 }
 
 body {
@@ -405,23 +409,24 @@ body {
    5. TRANSACTION ROWS (swipe to delete)
 ================================ */
 
-/* the wrapper clips the row while it slides over the red button */
+/* the wrapper clips the row while it slides over the Edit and Delete buttons */
 .trans-wrap {
+    --button-width: 72px;
+
     position: relative;
     overflow: hidden;
     border-bottom: 1px solid var(--border);
 }
 
+.trans-edit,
 .trans-delete {
     position: absolute;
     top: 0;
-    right: 0;
     bottom: 0;
     z-index: 0;
 
-    width: 88px;
+    width: var(--button-width);
 
-    background: var(--red);
     color: #FFFFFF;
 
     border: none;
@@ -433,8 +438,22 @@ body {
     cursor: pointer;
 }
 
+.trans-delete {
+    right: 0;
+    background: var(--red);
+}
+
 .trans-delete:hover {
     background: #B03F4B;
+}
+
+.trans-edit {
+    right: var(--button-width);
+    background: var(--green);
+}
+
+.trans-edit:hover {
+    background: var(--green-dark);
 }
 
 .trans-row {
@@ -455,7 +474,7 @@ body {
 }
 
 .trans-row.open {
-    transform: translateX(-88px);
+    transform: translateX(calc(var(--button-width) * -2));
 }
 
 .trans-date {
@@ -691,7 +710,7 @@ body {
     position: fixed;
     top: 50%;
     left: 50%;
-    z-index: 50;
+    z-index: 55;   /* above the category popup, because "Edit" opens this on top of it */
 
     display: none;
 
@@ -752,6 +771,11 @@ body {
 #type-toggle {
     display: grid;
     width: 100%;
+}
+
+/* when editing an entry you can't switch between Expense and Income */
+#entry-screen.editing #type-toggle {
+    display: none;
 }
 
 #type-toggle button {
@@ -1095,7 +1119,8 @@ body {
 
 #sheet-title,
 #sheet-error,
-#sheet-buttons {
+#sheet-buttons,
+#sheet-delete {
     flex: 0 0 auto;
 }
 
@@ -1136,6 +1161,14 @@ body {
     text-align: right;
 
     outline: none;
+}
+
+/* a field for a name (savings goals) instead of a number */
+.sheet-field input.text-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 200px;
+    text-align: left;
 }
 
 .sheet-field input:focus {
@@ -1184,6 +1217,32 @@ body {
 
 #sheet-confirm:hover {
     background: #5F172A;
+}
+
+/* the Delete button of a savings goal (hidden until a popup asks for it) */
+#sheet-delete {
+    display: none;
+    width: 100%;
+    min-height: 46px;
+    margin-top: 10px;
+
+    background: transparent;
+    color: var(--wine);
+
+    border: 1px solid var(--red-light);
+    border-radius: 14px;
+
+    font: inherit;
+    font-size: 14px;
+    font-weight: 650;
+
+    cursor: pointer;
+}
+
+#sheet-delete.sure {
+    background: var(--red);
+    color: #FFFFFF;
+    border-color: var(--red);
 }
 
 
@@ -1449,6 +1508,33 @@ body {
 
 .fund-btn:active {
     transform: scale(0.97);
+}
+
+#add-fund-button {
+    width: 100%;
+    min-height: 54px;
+    margin-top: 12px;
+
+    background: transparent;
+    color: var(--green);
+
+    border: 2px dashed #B6C7B5;
+    border-radius: var(--radius);
+
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        color 180ms ease;
+}
+
+#add-fund-button:hover {
+    background: var(--green-light);
+    color: var(--green-dark);
 }
 
 

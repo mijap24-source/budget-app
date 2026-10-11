@@ -3,8 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Budget</title>
+
+    <!-- app mode: when added to the phone's home screen it opens without the browser bar -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F5F1E9">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Budget">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -81,6 +91,8 @@
         </section>
 
         <div id="savings-list"></div>
+
+        <button id="add-fund-button" type="button">+ New savings goal</button>
     </main>
 
     <!-- ==================== NAVIGATION ==================== -->
@@ -88,8 +100,8 @@
 
     <nav id="tab-bar">
         <button class="tab active" data-page="budget">Budget</button>
-        <button class="tab" data-page="stats">Statistics</button>
         <button class="tab" data-page="savings">Savings</button>
+        <button class="tab" data-page="stats">Statistics</button>
     </nav>
 
     <!-- ==================== POPUPS ==================== -->
@@ -156,6 +168,7 @@
             <button id="sheet-cancel" type="button">Cancel</button>
             <button id="sheet-confirm" type="button">Save</button>
         </div>
+        <button id="sheet-delete" type="button">Delete</button>
     </div>
 
     <script src="messages.js"></script>
