@@ -66,6 +66,11 @@ function formatDate(date) {
     return shortName + " " + Number(date.split("-")[2]);
 }
 
+// how many days a month has: "2026-10" -> 31
+function daysIn(month) {
+    return new Date(Number(month.split("-")[0]), Number(month.split("-")[1]), 0).getDate();
+}
+
 // 1234 -> "1 234€"
 function euro(amount) {
     let rounded = Math.round(amount);
@@ -638,6 +643,97 @@ function renderIncomeScreen() {
 }
 
 byId("income-button").addEventListener("click", openIncomeScreen);
+
+// =====================================================================
+// 7b. NOTES POPUP (this month's watch list + last month's mistakes)
+// =====================================================================
+
+// every category's budget, spending and overspend for one month
+function categoryRows(month) {
+    let rows = [];
+    for (let i = 0; i < categories.length; i++) {
+        let budget = getBudget(categories[i].id, month);
+        let spent = spentMoney(categories[i].id, month);
+        rows.push({name: categories[i].name, budget: budget, spent: spent, over: spent - budget});
+    }
+    return rows;
+}
+
+// one coloured line: name + remark on the left, amount on the right.
+// the remark and colour come from getMessage() in messages.js
+function makeNoteItem(row, month, amountText) {
+    let isPast = month < currentMonth();
+    let message = getMessage(row.spent, row.budget, new Date().getDate(), daysIn(month), isPast);
+
+    let item = el("div", "note-item message " + message.color);
+
+    let left = el("div");
+    left.appendChild(el("div", "note-name", row.name));
+    left.appendChild(el("div", "note-remark", message.text));
+    item.appendChild(left);
+
+    item.appendChild(el("div", "note-amount", amountText));
+    return item;
+}
+
+function renderNotes() {
+    let thisMonth = currentMonth();
+    let lastMonth = addMonths(thisMonth, -1);
+    let day = new Date().getDate();
+    let timePercent = day / daysIn(thisMonth) * 100;
+
+    byId("notes-this-month").textContent = formatMonth(thisMonth);
+    byId("notes-last-month").textContent = formatMonth(lastMonth);
+
+    // ---------- WATCH OUT FOR (this month) ----------
+    // a category is worth watching if it is already over budget,
+    // or at 80%+ of its budget, or spending faster than the month passes
+    let watch = [];
+    let thisRows = categoryRows(thisMonth);
+    for (let i = 0; i < thisRows.length; i++) {
+        let row = thisRows[i];
+        let percent = percentOf(row.spent, row.budget);
+
+        if (row.over > 0) {
+            row.score = 1000 + row.over;    // over budget goes to the top
+            watch.push(row);
+        } else if (row.spent > 0 && (percent >= 80 || percent - timePercent > 10)) {
+            row.score = percent;
+            watch.push(row);
+        }
+    }
+    watch.sort(function(a, b) { return b.score - a.score; });
+
+    let watchBox = byId("notes-watch");
+    watchBox.innerHTML = "";
+    for (let i = 0; i < watch.length; i++) {
+        watchBox.appendChild(makeNoteItem(watch[i], thisMonth, euro(watch[i].spent) + " / " + euro(watch[i].budget)));
+    }
+    if (watch.length === 0) {
+        watchBox.appendChild(el("div", "empty-note", "Nothing to worry about so far."));
+    }
+
+    // ---------- LAST MONTH'S MISTAKES ----------
+    // only categories that went over, worst first
+    let mistakes = categoryRows(lastMonth).filter(function(row) { return row.over > 0; });
+    mistakes.sort(function(a, b) { return b.over - a.over; });
+
+    let mistakesBox = byId("notes-mistakes");
+    mistakesBox.innerHTML = "";
+    for (let i = 0; i < mistakes.length; i++) {
+        mistakesBox.appendChild(makeNoteItem(mistakes[i], lastMonth, "+" + euro(mistakes[i].over)));
+    }
+    if (mistakes.length === 0) {
+        mistakesBox.appendChild(el("div", "empty-note", "No overspending last month."));
+    }
+}
+
+function openNotesScreen() {
+    openLayer("notes");
+    renderNotes();
+}
+
+byId("notes-button").addEventListener("click", openNotesScreen);
 
 
 // =====================================================================
@@ -1241,6 +1337,7 @@ function refresh() {
 
     if (isVisible("category-screen") && openCategoryId !== null) renderCategoryPopup();
     if (isVisible("income-screen")) renderIncomeScreen();
+    if (isVisible("notes-screen")) renderNotes();
 }
 
 function showPage(name) {
