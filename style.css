@@ -979,7 +979,7 @@ body {
 ================================ */
 
 #category-screen,
-#income-screen
+#income-screen,
 #notes-screen {
     position: fixed;
     top: 50%;
